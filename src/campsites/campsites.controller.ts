@@ -12,6 +12,7 @@ import { CampsitesService } from './campsites.service';
 import { Campsite, CampsiteStatus } from './campsite.model';
 import { CreateCampsiteDto } from './dto/create-campsite.dto';
 import { UpdateCampsiteDto } from './dto/update-campsite.dto';
+import { CampsiteStatusValidationPipe } from './pipes/campsite-status-validation.pipe';
 
 @Controller('campsites')
 export class CampsitesController {
@@ -40,10 +41,10 @@ export class CampsitesController {
     return this.campsitesService.update(id, updateCampsiteDto);
   }
 
-  @Patch('/:id/:status')
+  @Patch('/:id/status')
   updateStatus(
     @Param('id') id: string,
-    @Param('status') status: CampsiteStatus,
+    @Body('status', CampsiteStatusValidationPipe) status: CampsiteStatus,
   ): Campsite {
     return this.campsitesService.updateStatus(id, status);
   }
