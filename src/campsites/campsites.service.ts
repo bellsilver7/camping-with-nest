@@ -1,19 +1,37 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Campsite, CampsiteStatus } from './campsite.model';
-import { v1 as uuid } from 'uuid';
+import { CampsiteStatus } from './enums/campsite-status.enum';
 import { CreateCampsiteDto } from './dto/create-campsite.dto';
 import { UpdateCampsiteDto } from './dto/update-campsite.dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Campsite } from './entities/campsite.entity';
 
 @Injectable()
 export class CampsitesService {
-  private campsites: Campsite[] = [];
+  constructor(
+    @InjectRepository(Campsite)
+    private campsitesRepository: Repository<Campsite>,
+  ) {}
 
-  findAll(): Campsite[] {
-    return this.campsites;
+  async create(createCampsiteDto: CreateCampsiteDto): Promise<Campsite> {
+    const { title, description } = createCampsiteDto;
+
+    const campsite = this.campsitesRepository.create({
+      title,
+      description,
+      status: CampsiteStatus.PUBLIC,
+    });
+    await this.campsitesRepository.save(campsite);
+
+    return campsite;
   }
 
-  find(id: string): Campsite {
-    const found = this.campsites.find((campsite) => campsite.id === id);
+  async findAll(): Promise<Campsite[]> {
+    return await this.campsitesRepository.find();
+  }
+
+  async find(id: number): Promise<Campsite> {
+    const found = await this.campsitesRepository.findOneBy({ id });
 
     if (!found) {
       throw new NotFoundException(`Can't find campsite with id ${id}`);
@@ -22,42 +40,35 @@ export class CampsitesService {
     return found;
   }
 
-  create(createCampsiteDto: CreateCampsiteDto): Campsite {
-    const { title, description } = createCampsiteDto;
-    const campsite: Campsite = {
-      id: uuid(),
-      title,
-      description,
-      status: CampsiteStatus.PUBLIC,
-    };
-
-    this.campsites.push(campsite);
-
-    return campsite;
-  }
-
-  update(id: string, updateCampsiteDto: UpdateCampsiteDto): Campsite {
-    const campsite = this.find(id);
+  async update(
+    id: number,
+    updateCampsiteDto: UpdateCampsiteDto,
+  ): Promise<Campsite> {
+    const campsite = await this.find(id);
     const { title, description } = updateCampsiteDto;
 
     campsite.title = title;
     campsite.description = description;
 
+    await this.campsitesRepository.save(campsite);
+
     return campsite;
   }
 
-  updateStatus(id: string, status: CampsiteStatus): Campsite {
-    const campsite = this.find(id);
+  async updateStatus(id: number, status: CampsiteStatus): Promise<Campsite> {
+    const campsite = await this.find(id);
 
     campsite.status = status;
 
+    await this.campsitesRepository.save(campsite);
+
     return campsite;
   }
 
-  remove(id: string): void {
-    const found = this.find(id);
-    this.campsites = this.campsites.filter(
-      (campsite) => campsite.id !== found.id,
-    );
+  async delete(id: number): Promise<void> {
+    const result = await this.campsitesRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Can't find campsite with id ${id}`);
+    }
   }
 }
