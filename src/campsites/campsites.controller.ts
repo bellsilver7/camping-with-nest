@@ -7,7 +7,6 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Put,
 } from '@nestjs/common';
 import { CampsitesService } from './campsites.service';
 import { CampsiteStatus } from './enums/campsite-status.enum';
