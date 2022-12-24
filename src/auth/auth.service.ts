@@ -2,6 +2,8 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -21,14 +23,11 @@ export class AuthService {
 
     // 비밀번호 암호화
     const salt = await bcrypt.genSalt();
-    console.log('salt =', salt);
-
-    const hash = await bcrypt.hash(password, salt);
-    console.log('hash =', hash);
+    const hashedPassword = bcrypt.hash(password, salt);
 
     const user = this.userRepository.create({
       username,
-      password: hash,
+      password: hashedPassword,
     });
 
     try {
@@ -40,5 +39,20 @@ export class AuthService {
         throw new InternalServerErrorException();
       }
     }
+  }
+
+  async signIn(authCredentialsDto: AuthCredentialsDto): Promise<string> {
+    const { username, password } = authCredentialsDto;
+
+    const user = await this.userRepository.findOneBy({ username });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+    if (!(await bcrypt.compare(password, user.password))) {
+      throw new UnauthorizedException();
+    }
+
+    return 'login success';
   }
 }
