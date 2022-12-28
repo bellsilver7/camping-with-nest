@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   ParseIntPipe,
   Patch,
@@ -22,6 +23,7 @@ import { User } from '../entities/user.entity';
 @Controller('campsites')
 @UseGuards(AuthGuard())
 export class CampsitesController {
+  private logger = new Logger('CampsiteController');
   constructor(private campsitesService: CampsitesService) {}
 
   @Post()
@@ -29,11 +31,19 @@ export class CampsitesController {
     @Body() createCampsiteDto: CreateCampsiteDto,
     @GetUser() user: User,
   ): Promise<Campsite> {
+    this.logger.verbose(
+      `Campsite ${
+        user.username
+      } creating a new campsite. Payload: ${JSON.stringify(createCampsiteDto)}`,
+    );
     return this.campsitesService.create(createCampsiteDto, user);
   }
 
   @Get()
   findAll(@Body('me') me: boolean, @GetUser() user: User): Promise<Campsite[]> {
+    this.logger.verbose(
+      `Campsite ${user.username} trying to get all campsites`,
+    );
     if (me) {
       return this.campsitesService.findAllByUser(user);
     }
