@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CampsiteStatus } from './enums/campsite-status.enum';
+import { CampsiteStatus } from '../enums/campsite-status.enum';
 import { CreateCampsiteDto } from './dto/create-campsite.dto';
 import { UpdateCampsiteDto } from './dto/update-campsite.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Campsite } from './entities/campsite.entity';
+import { Campsite } from '../entities/campsite.entity';
+import { User } from '../entities/user.entity';
 
 @Injectable()
 export class CampsitesService {
@@ -13,13 +14,17 @@ export class CampsitesService {
     private campsitesRepository: Repository<Campsite>,
   ) {}
 
-  async create(createCampsiteDto: CreateCampsiteDto): Promise<Campsite> {
+  async create(
+    createCampsiteDto: CreateCampsiteDto,
+    user: User,
+  ): Promise<Campsite> {
     const { title, description } = createCampsiteDto;
 
     const campsite = this.campsitesRepository.create({
       title,
       description,
       status: CampsiteStatus.PUBLIC,
+      user,
     });
     await this.campsitesRepository.save(campsite);
 
@@ -28,6 +33,14 @@ export class CampsitesService {
 
   async findAll(): Promise<Campsite[]> {
     return await this.campsitesRepository.find();
+  }
+
+  async findAllByUser(user: User): Promise<Campsite[]> {
+    const query = this.campsitesRepository.createQueryBuilder('campsite');
+    const result = await query
+      .where('campsite.userId = :userId', { userId: user.id })
+      .getMany();
+    return result;
   }
 
   async find(id: number): Promise<Campsite> {
@@ -67,6 +80,20 @@ export class CampsitesService {
 
   async delete(id: number): Promise<void> {
     const result = await this.campsitesRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Can't find campsite with id ${id}`);
+    }
+  }
+
+  async deleteByUser(id: number, user: User): Promise<void> {
+    const query = this.campsitesRepository.createQueryBuilder('campsite');
+    const result = await query
+      .delete()
+      .where('campsite.id = :id AND campsite.userId = :userId', {
+        id: id,
+        userId: user.id,
+      })
+      .execute();
     if (result.affected === 0) {
       throw new NotFoundException(`Can't find campsite with id ${id}`);
     }

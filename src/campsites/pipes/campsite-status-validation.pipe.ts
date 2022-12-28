@@ -3,7 +3,7 @@ import {
   BadRequestException,
   PipeTransform,
 } from '@nestjs/common';
-import { CampsiteStatus } from '../enums/campsite-status.enum';
+import { CampsiteStatus } from '../../enums/campsite-status.enum';
 
 export class CampsiteStatusValidationPipe implements PipeTransform {
   readonly StatusOptions = [CampsiteStatus.PUBLIC, CampsiteStatus.PRIVATE];
