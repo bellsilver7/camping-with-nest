@@ -1,11 +1,17 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TypeOrmConfig } from './config/typeorm.config';
+import { ConfigModule } from '@nestjs/config';
 import { CampsitesModule } from './campsites/campsites.module';
 import { AuthModule } from './auth/auth.module';
+import { TypeOrmConfig } from './config/typeorm.config';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(TypeOrmConfig), CampsitesModule, AuthModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forRootAsync(TypeOrmConfig),
+    CampsitesModule,
+    AuthModule,
+  ],
   controllers: [],
   providers: [],
 })
