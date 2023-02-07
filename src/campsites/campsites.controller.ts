@@ -24,7 +24,7 @@ import { User } from '../entities/user.entity';
 @UseGuards(AuthGuard())
 export class CampsitesController {
   private logger = new Logger('CampsiteController');
-  constructor(private campsitesService: CampsitesService) {}
+  constructor(private readonly campsitesService: CampsitesService) {}
 
   @Post()
   create(
@@ -53,6 +53,11 @@ export class CampsitesController {
   @Get('/me')
   findAllByUser(): Promise<Campsite[]> {
     return this.campsitesService.findAll();
+  }
+
+  @Get('/sync')
+  sync() {
+    return this.campsitesService.sync();
   }
 
   @Get('/:id')
