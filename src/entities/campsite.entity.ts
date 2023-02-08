@@ -13,6 +13,9 @@ export class Campsite extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ nullable: true })
+  goCampingContentId: number;
+
   @Column()
   title: string;
 

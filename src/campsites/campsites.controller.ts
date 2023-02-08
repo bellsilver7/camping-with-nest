@@ -19,6 +19,7 @@ import { Campsite } from '../entities/campsite.entity';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../auth/get-user.decorator';
 import { User } from '../entities/user.entity';
+import { SearchCampsiteDto } from './dto/search-campsite.dto';
 
 @Controller('campsites')
 @UseGuards(AuthGuard())
@@ -48,6 +49,12 @@ export class CampsitesController {
       return this.campsitesService.findAllByUser(user);
     }
     return this.campsitesService.findAll();
+  }
+
+  @Get('/search')
+  search(@Body() request: SearchCampsiteDto): Promise<Campsite[]> {
+    this.logger.verbose(`Campsite trying to search campsites`);
+    return this.campsitesService.search(request);
   }
 
   @Get('/me')

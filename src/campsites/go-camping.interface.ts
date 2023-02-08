@@ -1,21 +1,23 @@
+export interface GoCampingBasedList {
+  response: Response;
+}
+
+export interface Response {
+  header: Header;
+  body: Body;
+}
+
+export interface Body {
+  items: Item[];
+}
+
 export interface Item {
   contentId: string;
   facltNm: string;
   lineIntro: string;
 }
 
-export interface Items {
-  item: Item[];
-}
-
-export interface Body {
-  items: Items;
-}
-
-export interface Response {
-  body: Body;
-}
-
-export interface Root {
-  response: Response;
+export interface Header {
+  resultCode: string;
+  resultMsg: string;
 }
